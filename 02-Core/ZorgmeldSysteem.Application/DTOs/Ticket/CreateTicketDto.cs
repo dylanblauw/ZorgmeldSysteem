@@ -15,6 +15,7 @@ public class CreateTicketDto
     public int? MechanicID { get; set; }
     public int? ObjectId { get; set; }
     public string CreatedBy { get; set; } = string.Empty;
+    public bool IsUrgent { get; set; } = false;
 
     // TicketCode, CreatedOn, Status worden automatisch gegenereerd
 }

@@ -26,4 +26,5 @@ public class TicketDto
     public string? MechanicName { get; set; }
     public int? ObjectId { get; set; }
     public string? ObjectName { get; set; }
+    public bool IsUrgent { get; set; }
 }

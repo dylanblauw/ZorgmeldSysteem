@@ -16,4 +16,5 @@ public class UpdateTicketDto
     public DateTime? ScheduledOn { get; set; }
     public string? Solution { get; set; }
     public string ChangedBy { get; set; } = string.Empty;
+    public bool IsUrgent { get; set; }
 }

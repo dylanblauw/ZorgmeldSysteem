@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using ZorgmeldSysteem.Domain.Enums;
 
 namespace ZorgmeldSysteem.Domain.Entities
 {
@@ -48,5 +49,8 @@ namespace ZorgmeldSysteem.Domain.Entities
         // Navigation properties
         public Company Company { get; set; }
         public List<Ticket> Tickets { get; set; } = new();
+        public Priority DefaultPriority { get; set; } = Priority.Normal;
+        public ReactionTime DefaultReactionTime { get; set; } = ReactionTime.Within24Hours;
+
     }
 }

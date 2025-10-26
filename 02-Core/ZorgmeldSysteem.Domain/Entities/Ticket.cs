@@ -53,5 +53,7 @@ namespace ZorgmeldSysteem.Domain.Entities
         public Company Company { get; set; }
         public Mechanic? Mechanic { get; set; }
         public Objects? Object { get; set; }
+        public bool IsUrgent { get; set; } = false;
+
     }
 }

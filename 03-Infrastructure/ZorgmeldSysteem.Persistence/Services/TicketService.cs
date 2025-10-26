@@ -86,7 +86,8 @@ public class TicketService : ITicketService
             CreatedBy = createDto.CreatedBy,
             CreatedOn = DateTime.Now,
             Status = TicketStatus.Open,
-            TicketCode = await GenerateTicketCodeAsync() // Business logic
+            IsUrgent = createDto.IsUrgent,
+            TicketCode = await GenerateTicketCodeAsync() 
         };
 
         // Voeg toe aan database
@@ -141,10 +142,11 @@ public class TicketService : ITicketService
         if (updateDto.Solution != null)
             ticket.Solution = updateDto.Solution;
 
+        ticket.IsUrgent = updateDto.IsUrgent;
+
         ticket.ChangedBy = updateDto.ChangedBy;
         ticket.ChangedOn = DateTime.Now;
 
-        // Als status = Solved, zet datum
         if (updateDto.Status == TicketStatus.Solved)
         {
             ticket.SolvedOn = DateTime.Now;
@@ -153,7 +155,6 @@ public class TicketService : ITicketService
         _context.Tickets.Update(ticket);
         await _context.SaveChangesAsync();
 
-        // Haal op met includes
         Ticket? updatedTicket = await _context.Tickets
             .Include(t => t.Company)
             .Include(t => t.Mechanic)
@@ -330,6 +331,7 @@ public class TicketService : ITicketService
             Status = ticket.Status,
             Priority = ticket.Priority,
             ReactionTime = ticket.ReactionTime,
+            IsUrgent = ticket.IsUrgent,
             CreatedOn = ticket.CreatedOn,
             LeadTime = ticket.LeadTime,
             ScheduledOn = ticket.ScheduledOn,

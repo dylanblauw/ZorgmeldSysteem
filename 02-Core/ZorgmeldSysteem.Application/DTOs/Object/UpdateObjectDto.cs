@@ -1,4 +1,6 @@
-﻿namespace ZorgmeldSysteem.Application.DTOs.Object;
+﻿using ZorgmeldSysteem.Domain.Enums;
+
+namespace ZorgmeldSysteem.Application.DTOs.Object;
 
 public class UpdateObjectDto
 {
@@ -11,4 +13,7 @@ public class UpdateObjectDto
     public DateTime? LastMaintenance { get; set; }
     public DateTime? NextMaintenance { get; set; }
     public string ChangedBy { get; set; } = string.Empty;
+    public Priority DefaultPriority { get; set; }
+    public ReactionTime DefaultReactionTime { get; set; }
+
 }
