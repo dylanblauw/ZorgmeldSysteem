@@ -26,7 +26,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddDatabase();
+builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IMechanicService, MechanicService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
