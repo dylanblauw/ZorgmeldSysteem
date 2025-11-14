@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using ZorgmeldSysteem.Domain.Enums;
 
 namespace ZorgmeldSysteem.Domain.Entities
@@ -51,7 +52,7 @@ namespace ZorgmeldSysteem.Domain.Entities
 
         // Navigation properties
         public Company Company { get; set; }
-        public Mechanic? Mechanic { get; set; }
+        public User? Mechanic { get; set; }
         public Objects? Object { get; set; }
         public bool IsUrgent { get; set; } = false;
 

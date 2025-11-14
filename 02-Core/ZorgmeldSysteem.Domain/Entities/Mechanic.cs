@@ -35,6 +35,5 @@ namespace ZorgmeldSysteem.Domain.Entities
 
         // Navigation properties
         public Company? Company { get; set; }
-        public List<Ticket> Tickets { get; set; } = new();
     }
 }

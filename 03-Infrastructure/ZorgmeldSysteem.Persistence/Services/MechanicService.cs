@@ -1,175 +1,206 @@
-﻿using ZorgmeldSysteem.Application.Interfaces.IServices;
+﻿using Microsoft.EntityFrameworkCore;
 using ZorgmeldSysteem.Application.DTOs.Mechanic;
+using ZorgmeldSysteem.Application.Interfaces.IServices;
 using ZorgmeldSysteem.Domain.Entities;
 using ZorgmeldSysteem.Domain.Enums;
 using ZorgmeldSysteem.Persistence.Context;
-using Microsoft.EntityFrameworkCore;
 
-namespace ZorgmeldSysteem.Persistence.Services;
-
-public class MechanicService : IMechanicService
+namespace ZorgmeldSysteem.Persistence.Services
 {
-    private readonly ZorgmeldContext _context;
-
-    public MechanicService(ZorgmeldContext context)
+    public class MechanicService : IMechanicService
     {
-        _context = context;
-    }
+        private readonly ZorgmeldContext _context;
 
-    public async Task<MechanicDto?> GetByIdAsync(int id)
-    {
-        Mechanic? mechanic = await _context.Mechanics
-            .Include(m => m.Company)
-            .FirstOrDefaultAsync(m => m.MechanicID == id);
-
-        if (mechanic == null)
+        public MechanicService(ZorgmeldContext context)
         {
-            return null;
+            _context = context;
         }
 
-        return MapToDto(mechanic);
-    }
-
-    public async Task<IEnumerable<MechanicDto>> GetAllAsync()
-    {
-        List<Mechanic> mechanics = await _context.Mechanics
-            .Include(m => m.Company)
-            .ToListAsync();
-
-        List<MechanicDto> result = new List<MechanicDto>();
-        foreach (Mechanic mechanic in mechanics)
+        public async Task<MechanicDto?> GetByIdAsync(int id)
         {
-            result.Add(MapToDto(mechanic));
+            var user = await _context.Users
+                .Include(u => u.UserCompanies)
+                    .ThenInclude(uc => uc.Company)
+                .FirstOrDefaultAsync(u => u.UserID == id && u.UserLevel == UserLevel.Mechanic);
+
+            if (user == null)
+                return null;
+
+            return MapToDto(user);
         }
 
-        return result;
-    }
-
-    public async Task<MechanicDto> CreateAsync(CreateMechanicDto createDto)
-    {
-        Mechanic mechanic = new Mechanic
+        public async Task<IEnumerable<MechanicDto>> GetAllAsync()
         {
-            Name = createDto.Name,
-            Email = createDto.Email,
-            Phonenumber = createDto.Phonenumber,
-            Type = createDto.Type,
-            IsActive = createDto.IsActive,
-            CompanyID = createDto.CompanyID,
-            CreatedBy = createDto.CreatedBy,
-            CreatedOn = DateTime.Now
-        };
+            var mechanics = await _context.Users
+                .Include(u => u.UserCompanies)
+                    .ThenInclude(uc => uc.Company)
+                .Where(u => u.UserLevel == UserLevel.Mechanic)
+                .ToListAsync();
 
-        await _context.Mechanics.AddAsync(mechanic);
-        await _context.SaveChangesAsync();
-
-        Mechanic? savedMechanic = await _context.Mechanics
-            .Include(m => m.Company)
-            .FirstOrDefaultAsync(m => m.MechanicID == mechanic.MechanicID);
-
-        return MapToDto(savedMechanic!);
-    }
-
-    public async Task<MechanicDto> UpdateAsync(int id, UpdateMechanicDto updateDto)
-    {
-        Mechanic? mechanic = await _context.Mechanics.FindAsync(id);
-
-        if (mechanic == null)
-        {
-            throw new Exception($"Monteur met id {id} niet gevonden");
+            return mechanics.Select(MapToDto);
         }
 
-        if (updateDto.Name != null)
-            mechanic.Name = updateDto.Name;
-
-        if (updateDto.Email != null)
-            mechanic.Email = updateDto.Email;
-
-        if (updateDto.Phonenumber != null)
-            mechanic.Phonenumber = updateDto.Phonenumber;
-
-        if (updateDto.Type.HasValue)
-            mechanic.Type = updateDto.Type.Value;
-
-        if (updateDto.IsActive.HasValue)
-            mechanic.IsActive = updateDto.IsActive.Value;
-
-        if (updateDto.CompanyID.HasValue)
-            mechanic.CompanyID = updateDto.CompanyID.Value;
-
-        mechanic.ChangedBy = updateDto.ChangedBy;
-        mechanic.ChangedOn = DateTime.Now;
-
-        _context.Mechanics.Update(mechanic);
-        await _context.SaveChangesAsync();
-
-        Mechanic? updatedMechanic = await _context.Mechanics
-            .Include(m => m.Company)
-            .FirstOrDefaultAsync(m => m.MechanicID == id);
-
-        return MapToDto(updatedMechanic!);
-    }
-
-    public async Task DeleteAsync(int id)
-    {
-        Mechanic? mechanic = await _context.Mechanics.FindAsync(id);
-
-        if (mechanic == null)
+        public async Task<IEnumerable<MechanicDto>> GetActiveAsync()
         {
-            throw new Exception($"Monteur met id {id} niet gevonden");
+            var mechanics = await _context.Users
+                .Include(u => u.UserCompanies)
+                    .ThenInclude(uc => uc.Company)
+                .Where(u => u.UserLevel == UserLevel.Mechanic && u.IsActive)
+                .ToListAsync();
+
+            return mechanics.Select(MapToDto);
         }
 
-        _context.Mechanics.Remove(mechanic);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task<IEnumerable<MechanicDto>> GetActiveAsync()
-    {
-        List<Mechanic> mechanics = await _context.Mechanics
-            .Include(m => m.Company)
-            .ToListAsync();
-
-        List<MechanicDto> result = new List<MechanicDto>();
-        foreach (Mechanic mechanic in mechanics)
+        public async Task<IEnumerable<MechanicDto>> GetByTypeAsync(MechanicType type)
         {
-            if (mechanic.IsActive)
+            var mechanics = await _context.Users
+                .Include(u => u.UserCompanies)
+                    .ThenInclude(uc => uc.Company)
+                .Where(u => u.UserLevel == UserLevel.Mechanic && u.MechanicType == type)
+                .ToListAsync();
+
+            return mechanics.Select(MapToDto);
+        }
+
+        public async Task<MechanicDto> CreateAsync(CreateMechanicDto createDto)
+        {
+            // Validate company exists
+            var company = await _context.Companies.FindAsync(createDto.CompanyID);
+            if (company == null)
+                throw new InvalidOperationException($"Bedrijf met ID {createDto.CompanyID} niet gevonden");
+
+            // Check if email already exists
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == createDto.Email);
+            if (existingUser != null)
+                throw new InvalidOperationException($"Email {createDto.Email} is al in gebruik");
+
+            // Split name
+            var nameParts = createDto.Name.Split(' ', 2);
+            var firstName = nameParts.Length > 0 ? nameParts[0] : createDto.Name;
+            var lastName = nameParts.Length > 1 ? nameParts[1] : "";
+
+            // Create user with mechanic role
+            var user = new User
             {
-                result.Add(MapToDto(mechanic));
-            }
-        }
+                Email = createDto.Email,
+                Username = createDto.Email.Split('@')[0],
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(createDto.TempPassword),
+                FirstName = firstName,
+                LastName = lastName,
+                PhoneNumber = createDto.Phonenumber,
+                UserLevel = UserLevel.Mechanic,
+                MechanicType = createDto.Type,
+                IsActive = true,
+                CreatedOn = DateTime.UtcNow,
+                CreatedBy = "System"
+            };
 
-        return result;
-    }
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
 
-    public async Task<IEnumerable<MechanicDto>> GetByTypeAsync(MechanicType type)
-    {
-        List<Mechanic> mechanics = await _context.Mechanics
-            .Include(m => m.Company)
-            .ToListAsync();
-
-        List<MechanicDto> result = new List<MechanicDto>();
-        foreach (Mechanic mechanic in mechanics)
-        {
-            if (mechanic.Type == type)
+            // Link user to company
+            var userCompany = new UserCompany
             {
-                result.Add(MapToDto(mechanic));
-            }
+                UserID = user.UserID,
+                CompanyID = createDto.CompanyID,
+                IsActive = true,
+                AddedOn = DateTime.UtcNow
+            };
+
+            _context.UserCompanies.Add(userCompany);
+            await _context.SaveChangesAsync();
+
+            // Reload with includes
+            return (await GetByIdAsync(user.UserID))!;
         }
 
-        return result;
-    }
-
-    private MechanicDto MapToDto(Mechanic mechanic)
-    {
-        return new MechanicDto
+        public async Task<MechanicDto> UpdateAsync(int id, UpdateMechanicDto updateDto)
         {
-            MechanicID = mechanic.MechanicID,
-            Name = mechanic.Name,
-            Email = mechanic.Email,
-            Phonenumber = mechanic.Phonenumber,
-            Type = mechanic.Type,
-            IsActive = mechanic.IsActive,
-            CompanyID = mechanic.CompanyID,
-            CompanyName = mechanic.Company?.Name
-        };
+            var user = await _context.Users
+                .Include(u => u.UserCompanies)
+                .FirstOrDefaultAsync(u => u.UserID == id && u.UserLevel == UserLevel.Mechanic);
+
+            if (user == null)
+                throw new InvalidOperationException($"Monteur met ID {id} niet gevonden");
+
+            // Update only provided fields
+            if (!string.IsNullOrEmpty(updateDto.Name))
+            {
+                var nameParts = updateDto.Name.Split(' ', 2);
+                user.FirstName = nameParts[0];
+                user.LastName = nameParts.Length > 1 ? nameParts[1] : "";
+            }
+
+            if (!string.IsNullOrEmpty(updateDto.Email))
+                user.Email = updateDto.Email;
+
+            if (updateDto.Phonenumber != null)
+                user.PhoneNumber = updateDto.Phonenumber;
+
+            if (updateDto.Type.HasValue)
+                user.MechanicType = updateDto.Type.Value;
+
+            if (updateDto.IsActive.HasValue)
+                user.IsActive = updateDto.IsActive.Value;
+
+            user.ChangedOn = DateTime.UtcNow;
+            user.ChangedBy = !string.IsNullOrEmpty(updateDto.ChangedBy) ? updateDto.ChangedBy : "System";
+
+            // Update company if provided
+            if (updateDto.CompanyID.HasValue)
+            {
+                var existingLink = user.UserCompanies.FirstOrDefault(uc => uc.IsActive);
+                if (existingLink != null && existingLink.CompanyID != updateDto.CompanyID.Value)
+                {
+                    existingLink.IsActive = false;
+
+                    var newLink = new UserCompany
+                    {
+                        UserID = user.UserID,
+                        CompanyID = updateDto.CompanyID.Value,
+                        IsActive = true,
+                        AddedOn = DateTime.UtcNow
+                    };
+                    _context.UserCompanies.Add(newLink);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return (await GetByIdAsync(id))!;
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null || user.UserLevel != UserLevel.Mechanic)
+                throw new InvalidOperationException($"Monteur met ID {id} niet gevonden");
+
+            // Soft delete
+            user.IsActive = false;
+            user.ChangedOn = DateTime.UtcNow;
+            user.ChangedBy = "System";
+
+            await _context.SaveChangesAsync();
+        }
+
+        private static MechanicDto MapToDto(User user)
+        {
+            var activeCompany = user.UserCompanies?.FirstOrDefault(uc => uc.IsActive);
+
+            return new MechanicDto
+            {
+                MechanicID = user.UserID,
+                Name = $"{user.FirstName} {user.LastName}".Trim(),
+                Email = user.Email,
+                Phonenumber = user.PhoneNumber ?? "",
+                Type = user.MechanicType ?? MechanicType.InternalGeneral, 
+                IsActive = user.IsActive,
+                CompanyID = activeCompany?.CompanyID,
+                CompanyName = activeCompany?.Company?.Name,
+                CreatedOn = user.CreatedOn,
+                CreatedBy = user.CreatedBy ?? "System"
+            };
+        }
     }
 }

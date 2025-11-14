@@ -3,99 +3,116 @@ using ZorgmeldSysteem.Application.Interfaces.IServices;
 using ZorgmeldSysteem.Application.DTOs.Mechanic;
 using ZorgmeldSysteem.Domain.Enums;
 
-namespace ZorgmeldSysteem.WebApi.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class MechanicController : ControllerBase
+namespace ZorgmeldSysteem.WebApi.Controllers
 {
-    private readonly IMechanicService _mechanicService;
-
-    public MechanicController(IMechanicService mechanicService)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class MechanicController : ControllerBase
     {
-        _mechanicService = mechanicService;
-    }
+        private readonly IMechanicService _mechanicService;
 
-    // GET: api/mechanic
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
-    {
-        IEnumerable<MechanicDto> mechanics = await _mechanicService.GetAllAsync();
-        return Ok(mechanics);
-    }
-
-    // GET: api/mechanic/5
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id)
-    {
-        MechanicDto? mechanic = await _mechanicService.GetByIdAsync(id);
-
-        if (mechanic == null)
+        public MechanicController(IMechanicService mechanicService)
         {
-            return NotFound($"Monteur met id {id} niet gevonden");
+            _mechanicService = mechanicService;
         }
 
-        return Ok(mechanic);
-    }
-
-    // GET: api/mechanic/active
-    [HttpGet("active")]
-    public async Task<IActionResult> GetActive()
-    {
-        IEnumerable<MechanicDto> mechanics = await _mechanicService.GetActiveAsync();
-        return Ok(mechanics);
-    }
-
-    // GET: api/mechanic/type/1
-    [HttpGet("type/{type}")]
-    public async Task<IActionResult> GetByType(MechanicType type)
-    {
-        IEnumerable<MechanicDto> mechanics = await _mechanicService.GetByTypeAsync(type);
-        return Ok(mechanics);
-    }
-
-    // POST: api/mechanic
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateMechanicDto createDto)
-    {
-        try
+        // GET: api/mechanic
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
-            MechanicDto mechanic = await _mechanicService.CreateAsync(createDto);
-            return CreatedAtAction(nameof(GetById), new { id = mechanic.MechanicID }, mechanic);
+            var mechanics = await _mechanicService.GetAllAsync();
+            return Ok(mechanics);
         }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-    }
 
-    // PUT: api/mechanic/5
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateMechanicDto updateDto)
-    {
-        try
+        // GET: api/mechanic/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
         {
-            MechanicDto mechanic = await _mechanicService.UpdateAsync(id, updateDto);
+            var mechanic = await _mechanicService.GetByIdAsync(id);
+            if (mechanic == null)
+            {
+                return NotFound(new { message = $"Monteur met id {id} niet gevonden" });
+            }
             return Ok(mechanic);
         }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
-    }
 
-    // DELETE: api/mechanic/5
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        try
+        // GET: api/mechanic/active
+        [HttpGet("active")]
+        public async Task<IActionResult> GetActive()
         {
-            await _mechanicService.DeleteAsync(id);
-            return NoContent();
+            var mechanics = await _mechanicService.GetActiveAsync();
+            return Ok(mechanics);
         }
-        catch (Exception ex)
+
+        // GET: api/mechanic/type/1
+        [HttpGet("type/{type}")]
+        public async Task<IActionResult> GetByType(MechanicType type)
         {
-            return BadRequest(ex.Message);
+            var mechanics = await _mechanicService.GetByTypeAsync(type);
+            return Ok(mechanics);
+        }
+
+        // POST: api/mechanic
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateMechanicDto createDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var mechanic = await _mechanicService.CreateAsync(createDto);
+                return CreatedAtAction(nameof(GetById), new { id = mechanic.MechanicID }, mechanic);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Er is een fout opgetreden", details = ex.Message });
+            }
+        }
+
+        // PUT: api/mechanic/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateMechanicDto updateDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var mechanic = await _mechanicService.UpdateAsync(id, updateDto);
+                return Ok(mechanic);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Er is een fout opgetreden", details = ex.Message });
+            }
+        }
+
+        // DELETE: api/mechanic/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                await _mechanicService.DeleteAsync(id);
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Er is een fout opgetreden", details = ex.Message });
+            }
         }
     }
 }

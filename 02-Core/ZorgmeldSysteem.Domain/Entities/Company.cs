@@ -56,5 +56,7 @@ namespace ZorgmeldSysteem.Domain.Entities
         public List<Ticket> Tickets { get; set; } = new();
         public List<Mechanic> Mechanics { get; set; } = new();
         public List<Objects> Objects { get; set; } = new();
+        public List<UserCompany> UserCompanies { get; set; } = new();
+
     }
 }

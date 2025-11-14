@@ -12,8 +12,8 @@ using ZorgmeldSysteem.Persistence.Context;
 namespace ZorgmeldSysteem.Persistence.Migrations
 {
     [DbContext(typeof(ZorgmeldContext))]
-    [Migration("20250927125714_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251114191136_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,11 +33,6 @@ namespace ZorgmeldSysteem.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CompanyID"));
 
-                    b.Property<string>("Adress")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
                     b.Property<string>("ChangedBy")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -45,7 +40,17 @@ namespace ZorgmeldSysteem.Persistence.Migrations
                     b.Property<DateTime?>("ChangedOn")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("Contact")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Country")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -62,6 +67,16 @@ namespace ZorgmeldSysteem.Persistence.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("HouseNumber")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("HouseNumberAddition")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<bool>("IsExternal")
                         .HasColumnType("bit");
 
@@ -74,6 +89,21 @@ namespace ZorgmeldSysteem.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("PostalCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Province")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("CompanyID");
 
@@ -163,6 +193,12 @@ namespace ZorgmeldSysteem.Persistence.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("DefaultPriority")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DefaultReactionTime")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -239,6 +275,9 @@ namespace ZorgmeldSysteem.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<bool>("IsUrgent")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LeadTime")
                         .HasColumnType("datetime2");
 
@@ -294,6 +333,127 @@ namespace ZorgmeldSysteem.Persistence.Migrations
                     b.ToTable("Tickets");
                 });
 
+            modelBuilder.Entity("ZorgmeldSysteem.Domain.Entities.User", b =>
+                {
+                    b.Property<int>("UserID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserID"));
+
+                    b.Property<string>("ChangedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ChangedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("LastLogin")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("MechanicType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("UserLevel")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("UserID");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("UserLevel");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("ZorgmeldSysteem.Domain.Entities.UserCompany", b =>
+                {
+                    b.Property<int>("UserCompanyID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserCompanyID"));
+
+                    b.Property<int?>("AddedByUserID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("AddedOn")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<int>("CompanyID")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserCompanyID");
+
+                    b.HasIndex("AddedByUserID");
+
+                    b.HasIndex("CompanyID");
+
+                    b.HasIndex("UserID");
+
+                    b.HasIndex("UserID", "CompanyID")
+                        .IsUnique();
+
+                    b.ToTable("UserCompanies");
+                });
+
             modelBuilder.Entity("ZorgmeldSysteem.Domain.Entities.Mechanic", b =>
                 {
                     b.HasOne("ZorgmeldSysteem.Domain.Entities.Company", "Company")
@@ -319,22 +479,50 @@ namespace ZorgmeldSysteem.Persistence.Migrations
                     b.HasOne("ZorgmeldSysteem.Domain.Entities.Company", "Company")
                         .WithMany("Tickets")
                         .HasForeignKey("CompanyID")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("ZorgmeldSysteem.Domain.Entities.Mechanic", "Mechanic")
-                        .WithMany("Tickets")
-                        .HasForeignKey("MechanicID");
+                    b.HasOne("ZorgmeldSysteem.Domain.Entities.User", "Mechanic")
+                        .WithMany("AssignedTickets")
+                        .HasForeignKey("MechanicID")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("ZorgmeldSysteem.Domain.Entities.Objects", "Object")
                         .WithMany("Tickets")
-                        .HasForeignKey("ObjectId");
+                        .HasForeignKey("ObjectId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Company");
 
                     b.Navigation("Mechanic");
 
                     b.Navigation("Object");
+                });
+
+            modelBuilder.Entity("ZorgmeldSysteem.Domain.Entities.UserCompany", b =>
+                {
+                    b.HasOne("ZorgmeldSysteem.Domain.Entities.User", "AddedBy")
+                        .WithMany()
+                        .HasForeignKey("AddedByUserID")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("ZorgmeldSysteem.Domain.Entities.Company", "Company")
+                        .WithMany("UserCompanies")
+                        .HasForeignKey("CompanyID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ZorgmeldSysteem.Domain.Entities.User", "User")
+                        .WithMany("UserCompanies")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AddedBy");
+
+                    b.Navigation("Company");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ZorgmeldSysteem.Domain.Entities.Company", b =>
@@ -344,16 +532,20 @@ namespace ZorgmeldSysteem.Persistence.Migrations
                     b.Navigation("Objects");
 
                     b.Navigation("Tickets");
-                });
 
-            modelBuilder.Entity("ZorgmeldSysteem.Domain.Entities.Mechanic", b =>
-                {
-                    b.Navigation("Tickets");
+                    b.Navigation("UserCompanies");
                 });
 
             modelBuilder.Entity("ZorgmeldSysteem.Domain.Entities.Objects", b =>
                 {
                     b.Navigation("Tickets");
+                });
+
+            modelBuilder.Entity("ZorgmeldSysteem.Domain.Entities.User", b =>
+                {
+                    b.Navigation("AssignedTickets");
+
+                    b.Navigation("UserCompanies");
                 });
 #pragma warning restore 612, 618
         }
