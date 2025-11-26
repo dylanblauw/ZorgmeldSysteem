@@ -12,11 +12,14 @@ var builder = WebApplication.CreateBuilder(args);
 // ===================================
 // FLY.IO CONFIGURATIE
 // ===================================
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-builder.WebHost.ConfigureKestrel(options =>
+if (!builder.Environment.IsDevelopment())
 {
-    options.ListenAnyIP(int.Parse(port));
-});
+    var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.ListenAnyIP(int.Parse(port));
+    });
+}
 
 // ===================================
 // CONTROLLERS & SWAGGER
@@ -38,31 +41,91 @@ builder.Services.AddSwaggerGen(options =>
 // ===================================
 builder.Services.AddDatabase(builder.Configuration);
 
+//// ===================================
+//// JWT AUTHENTICATION
+//// ===================================
+//var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+//builder.Services.Configure<JwtSettings>(jwtSettings);
+
+//// ⭐ Lees ALLE JWT settings uit environment variables (Fly.io) of User Secrets (lokaal)
+//// Prioriteit: 1) Environment Variable (Fly.io), 2) Configuration (User Secrets), 3) Error
+//var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+//    ?? jwtSettings.Get<JwtSettings>()?.SecretKey
+//    ?? throw new InvalidOperationException("JWT SecretKey not configured");
+
+//var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
+//    ?? jwtSettings.Get<JwtSettings>()?.Issuer
+//    ?? throw new InvalidOperationException("JWT Issuer not configured");
+
+//var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
+//    ?? jwtSettings.Get<JwtSettings>()?.Audience
+//    ?? throw new InvalidOperationException("JWT Audience not configured");
+
+//var expirationMinutes = int.TryParse(
+//    Environment.GetEnvironmentVariable("JWT_EXPIRATION_MINUTES"),
+//    out var expMinutes)
+//    ? expMinutes
+//    : (jwtSettings.Get<JwtSettings>()?.ExpirationMinutes ?? 480);
+
+//builder.Services.AddAuthentication(options =>
+//{
+//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+//})
+//.AddJwtBearer(options =>
+//{
+//    options.TokenValidationParameters = new TokenValidationParameters
+//    {
+//        ValidateIssuerSigningKey = true,
+//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+//        ValidateIssuer = true,
+//        ValidIssuer = issuer,
+//        ValidateAudience = true,
+//        ValidAudience = audience,
+//        ValidateLifetime = true,
+//        ClockSkew = TimeSpan.Zero
+//    };
+//});
+
+//builder.Services.AddAuthorization();
+
 // ===================================
 // JWT AUTHENTICATION
 // ===================================
+Console.WriteLine("🔍 Starting JWT Configuration...");
+
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var jwtSettingsObj = jwtSettings.Get<JwtSettings>();
+
+Console.WriteLine($"SecretKey from config: {jwtSettingsObj?.SecretKey?.Substring(0, 10)}...");
+Console.WriteLine($"Issuer from config: {jwtSettingsObj?.Issuer}");
+Console.WriteLine($"Audience from config: {jwtSettingsObj?.Audience}");
+
 builder.Services.Configure<JwtSettings>(jwtSettings);
 
-// ⭐ Lees ALLE JWT settings uit environment variables (Fly.io) of User Secrets (lokaal)
-// Prioriteit: 1) Environment Variable (Fly.io), 2) Configuration (User Secrets), 3) Error
+// Lees uit environment variables of User Secrets
 var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
-    ?? jwtSettings.Get<JwtSettings>()?.SecretKey
-    ?? throw new InvalidOperationException("JWT SecretKey not configured");
+    ?? jwtSettingsObj?.SecretKey
+    ?? "JouwSuperGeheimeSleutelVanMinimaal32Karakters!@#$%^&*()";
 
 var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
-    ?? jwtSettings.Get<JwtSettings>()?.Issuer
-    ?? throw new InvalidOperationException("JWT Issuer not configured");
+    ?? jwtSettingsObj?.Issuer
+    ?? "FixilityAPI";
 
 var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
-    ?? jwtSettings.Get<JwtSettings>()?.Audience
-    ?? throw new InvalidOperationException("JWT Audience not configured");
+    ?? jwtSettingsObj?.Audience
+    ?? "FixilityBlazor";
 
 var expirationMinutes = int.TryParse(
     Environment.GetEnvironmentVariable("JWT_EXPIRATION_MINUTES"),
     out var expMinutes)
     ? expMinutes
-    : (jwtSettings.Get<JwtSettings>()?.ExpirationMinutes ?? 480);
+    : (jwtSettingsObj?.ExpirationMinutes ?? 480);
+
+Console.WriteLine($"Using SecretKey: {secretKey.Substring(0, 10)}...");
+Console.WriteLine($"Using Issuer: {issuer}");
+Console.WriteLine($"Using Audience: {audience}");
+Console.WriteLine($"Using ExpirationMinutes: {expirationMinutes}");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -85,6 +148,8 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+Console.WriteLine("JWT Configuration Complete!");
 
 // ===================================
 // APPLICATION SERVICES
