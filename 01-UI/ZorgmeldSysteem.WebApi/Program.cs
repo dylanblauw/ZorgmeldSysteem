@@ -1,13 +1,22 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using ZorgmeldSysteem.Application.Interfaces.IServices; // ✅ Add this!
+using ZorgmeldSysteem.Application.Interfaces.IServices;
 using ZorgmeldSysteem.Application.Services;
 using ZorgmeldSysteem.Domain.Configuration;
 using ZorgmeldSysteem.Infrastructure.Configuration;
 using ZorgmeldSysteem.Persistence.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ===================================
+// FLY.IO CONFIGURATIE
+// ===================================
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(int.Parse(port));
+});
 
 // ===================================
 // CONTROLLERS & SWAGGER
@@ -35,7 +44,9 @@ builder.Services.AddDatabase(builder.Configuration);
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 builder.Services.Configure<JwtSettings>(jwtSettings);
 
-var secretKey = jwtSettings.Get<JwtSettings>()?.SecretKey
+// ⭐ AANGEPAST: Lees eerst uit environment variable, dan appsettings
+var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+    ?? jwtSettings.Get<JwtSettings>()?.SecretKey
     ?? throw new InvalidOperationException("JWT SecretKey not configured");
 
 builder.Services.AddAuthentication(options =>
@@ -65,7 +76,7 @@ builder.Services.AddAuthorization();
 // ===================================
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<IMechanicService, MechanicService>(); 
+builder.Services.AddScoped<IMechanicService, MechanicService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IObjectService, ObjectService>();
@@ -94,13 +105,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Zorgmeld API v1");
-        options.RoutePrefix = "swagger"; 
+        options.RoutePrefix = "swagger";
     });
 }
 
 app.UseHttpsRedirection();
 app.UseCors("AllowBlazor");
-app.UseAuthentication(); 
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
