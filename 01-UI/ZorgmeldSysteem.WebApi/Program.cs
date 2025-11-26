@@ -39,6 +39,12 @@ builder.Services.AddSwaggerGen(options =>
 // ===================================
 // DATABASE
 // ===================================
+var dbConnectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTION_STRING");
+if (!string.IsNullOrEmpty(dbConnectionString))
+{
+    builder.Configuration["ConnectionStrings:ZorgmeldDatabase"] = dbConnectionString;
+}
+
 builder.Services.AddDatabase(builder.Configuration);
 
 //// ===================================
