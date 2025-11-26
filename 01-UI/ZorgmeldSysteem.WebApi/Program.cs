@@ -41,24 +41,30 @@ builder.Services.AddSwaggerGen(options =>
 // ===================================
 builder.Services.AddDatabase(builder.Configuration);
 
+
+
+
 // ===================================
-// JWT AUTHENTICATION
+// JWT AUTHENTICATION \\morgen aanpassen zorgen dat hij uit secrets.json haalt en niet hier echt fysiek neerzet
 // ===================================
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-builder.Services.Configure<JwtSettings>(jwtSettings);
+builder.Configuration.AddUserSecrets<Program>();
 
-// Lees uit environment variables (Fly.io) of User Secrets (lokaal)
-var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
-    ?? jwtSettings.Get<JwtSettings>()?.SecretKey
-    ?? throw new InvalidOperationException("JWT SecretKey not configured");
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
 
-var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
-    ?? jwtSettings.Get<JwtSettings>()?.Issuer
-    ?? "FixilityAPI";
+var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? jwtSettings.SecretKey;
+var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? jwtSettings.Issuer;
+var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? jwtSettings.Audience;
 
-var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
-    ?? jwtSettings.Get<JwtSettings>()?.Audience
-    ?? "FixilityBlazor";
+
+Console.WriteLine($"[DEBUG] SecretKey length: {secretKey?.Length ?? 0}");
+Console.WriteLine($"[DEBUG] Issuer: {issuer}");
+Console.WriteLine($"[DEBUG] Audience: {audience}");
+
+
+
+if (string.IsNullOrEmpty(secretKey) || string.IsNullOrEmpty(issuer) || string.IsNullOrEmpty(audience))
+    throw new InvalidOperationException("JWT configuratie ontbreekt!");
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 
 builder.Services.AddAuthentication(options =>
 {
