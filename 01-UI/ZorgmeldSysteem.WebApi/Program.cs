@@ -44,10 +44,25 @@ builder.Services.AddDatabase(builder.Configuration);
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 builder.Services.Configure<JwtSettings>(jwtSettings);
 
-// ⭐ AANGEPAST: Lees eerst uit environment variable, dan appsettings
+// ⭐ Lees ALLE JWT settings uit environment variables (Fly.io) of User Secrets (lokaal)
+// Prioriteit: 1) Environment Variable (Fly.io), 2) Configuration (User Secrets), 3) Error
 var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
     ?? jwtSettings.Get<JwtSettings>()?.SecretKey
     ?? throw new InvalidOperationException("JWT SecretKey not configured");
+
+var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
+    ?? jwtSettings.Get<JwtSettings>()?.Issuer
+    ?? throw new InvalidOperationException("JWT Issuer not configured");
+
+var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
+    ?? jwtSettings.Get<JwtSettings>()?.Audience
+    ?? throw new InvalidOperationException("JWT Audience not configured");
+
+var expirationMinutes = int.TryParse(
+    Environment.GetEnvironmentVariable("JWT_EXPIRATION_MINUTES"),
+    out var expMinutes)
+    ? expMinutes
+    : (jwtSettings.Get<JwtSettings>()?.ExpirationMinutes ?? 480);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -61,9 +76,9 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
         ValidateIssuer = true,
-        ValidIssuer = jwtSettings.Get<JwtSettings>()?.Issuer,
+        ValidIssuer = issuer,
         ValidateAudience = true,
-        ValidAudience = jwtSettings.Get<JwtSettings>()?.Audience,
+        ValidAudience = audience,
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
