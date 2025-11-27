@@ -235,12 +235,12 @@ builder.Services.AddAuthorization();
 // ===================================
 // APPLICATION SERVICES
 // ===================================
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<IMechanicService, MechanicService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ILocationService, LocationService>();
-builder.Services.AddScoped<IReportService, ReportService>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IObjectService, ObjectService>();
 
 // ===================================
 // CORS
