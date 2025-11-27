@@ -13,7 +13,7 @@ namespace ZorgmeldSysteem.Infrastructure.Configuration
         {
             // Probeer eerst environment variable (Fly.io), anders appsettings
             var connectionString =
-                Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTION_STRING")
+                Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
                 ?? configuration.GetConnectionString("ZorgmeldDatabase");
 
             services.AddDbContext<ZorgmeldContext>(options =>

@@ -190,9 +190,9 @@ if (builder.Environment.IsDevelopment())
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()
     ?? throw new InvalidOperationException("JwtSettings sectie ontbreekt in configuratie!");
 
-var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? jwtSettings.SecretKey;
-var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? jwtSettings.Issuer;
-var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? jwtSettings.Audience;
+var secretKey = Environment.GetEnvironmentVariable("JwtSettings__SecretKey") ?? jwtSettings.SecretKey;
+var issuer = Environment.GetEnvironmentVariable("JwtSettings__Issuer") ?? jwtSettings.Issuer;
+var audience = Environment.GetEnvironmentVariable("JwtSettings__Audience") ?? jwtSettings.Audience;
 
 // Debug logging (alleen in development)
 if (builder.Environment.IsDevelopment())
