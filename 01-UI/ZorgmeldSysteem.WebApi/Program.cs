@@ -251,22 +251,23 @@ builder.Services.AddCors(options =>
     {
         if (builder.Environment.IsDevelopment())
         {
-            // Development: alle origins toestaan voor makkelijker testen
-            policy.AllowAnyOrigin()
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        }
-        else
-        {
-            // Production: alleen specifieke origins toestaan
-            // Pas deze URLs aan naar jouw daadwerkelijke Blazor app URLs
+            // Development: localhost + Fly.io
             policy.WithOrigins(
-                      "https://jouw-blazor-app.fly.dev",
-                      "https://jouw-custom-domain.nl"
+                      "https://zorgmeldsysteem-frontend.fly.dev",
+                      "http://localhost:5030",
+                      "https://localhost:7052"
                   )
                   .AllowAnyHeader()
                   .AllowAnyMethod()
-                  .AllowCredentials(); // Belangrijk voor authenticated requests
+                  .AllowCredentials();
+        }
+        else
+        {
+            // Production: alleen Fly.io
+            policy.WithOrigins("https://zorgmeldsysteem-frontend.fly.dev")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
         }
     });
 });
