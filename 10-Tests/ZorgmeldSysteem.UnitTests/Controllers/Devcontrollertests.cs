@@ -49,7 +49,6 @@ public class DevControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
 
-        // FIX: Gebruik reflection in plaats van dynamic
         var resultValue = okResult.Value!;
         var verifiedProperty = resultValue.GetType().GetProperty("verified");
         var verified = (bool)verifiedProperty!.GetValue(resultValue)!;
@@ -73,7 +72,6 @@ public class DevControllerTests
         var okResult1 = Assert.IsType<OkObjectResult>(result1);
         var okResult2 = Assert.IsType<OkObjectResult>(result2);
 
-        // FIX: Gebruik reflection
         var value1 = okResult1.Value!;
         var value2 = okResult2.Value!;
 
@@ -99,7 +97,6 @@ public class DevControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
 
-        // FIX: Gebruik reflection
         var resultValue = okResult.Value!;
         var passwordValue = resultValue.GetType().GetProperty("password")!.GetValue(resultValue)!.ToString();
         var hashValue = resultValue.GetType().GetProperty("hash")!.GetValue(resultValue)!.ToString();
@@ -122,7 +119,6 @@ public class DevControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
 
-        // FIX: Gebruik reflection
         var resultValue = okResult.Value!;
         var messageValue = resultValue.GetType().GetProperty("message")!.GetValue(resultValue)!.ToString();
 
@@ -143,7 +139,6 @@ public class DevControllerTests
         var generateResult = controller.GenerateHash("TestPass123");
         var generateOkResult = Assert.IsType<OkObjectResult>(generateResult);
 
-        // FIX: Gebruik reflection
         var generateValue = generateOkResult.Value!;
         string hash = generateValue.GetType().GetProperty("hash")!.GetValue(generateValue)!.ToString()!;
 
@@ -172,7 +167,6 @@ public class DevControllerTests
         var hashResult = controller.GenerateHash(password);
         var hashOkResult = Assert.IsType<OkObjectResult>(hashResult);
 
-        // FIX: Gebruik reflection
         var hashValue = hashOkResult.Value!;
         string hash = hashValue.GetType().GetProperty("hash")!.GetValue(hashValue)!.ToString()!;
 
@@ -188,7 +182,6 @@ public class DevControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
 
-        // FIX: Gebruik reflection
         var resultValue = okResult.Value!;
         var isValid = (bool)resultValue.GetType().GetProperty("isValid")!.GetValue(resultValue)!;
 
@@ -205,7 +198,6 @@ public class DevControllerTests
         var hashResult = controller.GenerateHash("CorrectPassword");
         var hashOkResult = Assert.IsType<OkObjectResult>(hashResult);
 
-        // FIX: Gebruik reflection
         var hashValue = hashOkResult.Value!;
         string hash = hashValue.GetType().GetProperty("hash")!.GetValue(hashValue)!.ToString()!;
 
@@ -221,7 +213,7 @@ public class DevControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
 
-        // FIX: Gebruik reflection
+
         var resultValue = okResult.Value!;
         var isValid = (bool)resultValue.GetType().GetProperty("isValid")!.GetValue(resultValue)!;
 
@@ -245,7 +237,6 @@ public class DevControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
 
-        // FIX: Gebruik reflection
         var resultValue = okResult.Value!;
         var passwordValue = resultValue.GetType().GetProperty("password")!.GetValue(resultValue)!.ToString();
         var hashValue = resultValue.GetType().GetProperty("hash")!.GetValue(resultValue)!.ToString();
@@ -268,7 +259,6 @@ public class DevControllerTests
         var hashResult = controller.GenerateHash(hashPassword);
         var hashOkResult = Assert.IsType<OkObjectResult>(hashResult);
 
-        // FIX: Gebruik reflection
         var hashValue = hashOkResult.Value!;
         string hash = hashValue.GetType().GetProperty("hash")!.GetValue(hashValue)!.ToString()!;
 
@@ -284,7 +274,6 @@ public class DevControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
 
-        // FIX: Gebruik reflection
         var resultValue = okResult.Value!;
         var isValid = (bool)resultValue.GetType().GetProperty("isValid")!.GetValue(resultValue)!;
 
@@ -306,7 +295,6 @@ public class DevControllerTests
         var generateResult = controller.GenerateHash(originalPassword);
         var generateOkResult = Assert.IsType<OkObjectResult>(generateResult);
 
-        // FIX: Gebruik reflection
         var generateValue = generateOkResult.Value!;
         string generatedHash = generateValue.GetType().GetProperty("hash")!.GetValue(generateValue)!.ToString()!;
 
@@ -321,7 +309,6 @@ public class DevControllerTests
         // Assert
         var testOkResult = Assert.IsType<OkObjectResult>(testResult);
 
-        // FIX: Gebruik reflection
         var testValue = testOkResult.Value!;
         var isValid = (bool)testValue.GetType().GetProperty("isValid")!.GetValue(testValue)!;
 
