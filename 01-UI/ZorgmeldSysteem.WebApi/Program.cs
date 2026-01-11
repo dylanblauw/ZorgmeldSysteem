@@ -255,7 +255,7 @@ builder.Services.AddCors(options =>
             policy.WithOrigins(
                       "https://zorgmeldsysteem-frontend.fly.dev",
                       "http://localhost:5030",
-                      "https://localhost:7052"
+                      "https://localhost:7001"
                   )
                   .AllowAnyHeader()
                   .AllowAnyMethod()
